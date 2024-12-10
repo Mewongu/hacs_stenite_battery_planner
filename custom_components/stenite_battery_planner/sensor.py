@@ -30,24 +30,28 @@ async def async_setup_platform(
         return
 
     async_add_entities([
-        BatteryPlanSensor(coordinator)
+        BatteryPlanSensor(coordinator, 'watts'),
+        BatteryPlanSensor(coordinator, 'status'),
+        BatteryPlanSensor(coordinator, 'search_time'),
+        BatteryPlanSensor(coordinator, 'schedule'),
     ])
 
 
 class BatteryPlanSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Battery Planner Sensor."""
 
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
+    def __init__(self, coordinator: BatteryPlannerCoordinator, attribute):
         """Initialize the sensor."""
         super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_sensor"
-        self._attr_name = "Battery Plan"
+        self._attr_unique_id = f"{DOMAIN}_sensor_{attribute}"
+        self._attr_name = f"Battery Plan {attribute}"
+        self._attribute = attribute
 
     @property
     def state(self) -> str:
         """Return the state of the sensor."""
         # Default to 'Unknown' if no data
-        return self.coordinator.data.get('watts', 'Unknown')
+        return self.coordinator.data.get(self._attribute, 'Unknown')
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
