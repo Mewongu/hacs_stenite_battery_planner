@@ -17,7 +17,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import CONF_NAME, CONF_ENDPOINT
+from homeassistant.const import CONF_NAME
 
 DOMAIN = "stenite_battery_planner"
 _LOGGER = logging.getLogger(__name__)
