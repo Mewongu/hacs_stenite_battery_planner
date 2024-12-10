@@ -7,7 +7,7 @@ from typing import Any
 import voluptuous as vol
 import aiohttp
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, SupportsResponse
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
@@ -73,7 +73,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         DOMAIN, 
         'plan', 
         plan_battery, 
-        schema=CALL_SERVICE_SCHEMA
+        schema=CALL_SERVICE_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
     )
     
     return True
