@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # Default values
 DEFAULT_NAME = "Battery Planner"
-DEFAULT_SECONDS_TO_SEARCH = 60
+DEFAULT_SECONDS_TO_SEARCH = 15
 DEFAULT_BATTERY_ALLOW_EXPORT = False
 
 # Configuration schema
@@ -40,7 +40,10 @@ CALL_SERVICE_SCHEMA = vol.Schema({
     vol.Required('battery_capacity'): vol.Coerce(float),
     vol.Required('min_battery_soc'): vol.Coerce(float),
     vol.Required('max_battery_soc'): vol.Coerce(float),
+    vol.Required('max_battery_discharge'): vol.Coerce(float),
+    vol.Required('max_battery_charge'): vol.Coerce(float),
     vol.Required('battery_soc'): vol.Coerce(float),
+    vol.Required('cycle_cost'): vol.Coerce(float),
     vol.Optional('battery_allow_export', default=DEFAULT_BATTERY_ALLOW_EXPORT): cv.boolean,
     vol.Optional('seconds_to_search', default=DEFAULT_SECONDS_TO_SEARCH): cv.positive_int,
 })
@@ -67,9 +70,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             'battery_capacity': call.data['battery_capacity'],
             'min_battery_soc': call.data['min_battery_soc'],
             'max_battery_soc': call.data['max_battery_soc'],
+            'max_battery_discharge': call.data['max_battery_discharge'],
+            'max_battery_charge': call.data['max_battery_charge'],
             'battery_soc': call.data['battery_soc'],
             'battery_allow_export': call.data.get('battery_allow_export', DEFAULT_BATTERY_ALLOW_EXPORT),
             'seconds_to_search': call.data.get('seconds_to_search', DEFAULT_SECONDS_TO_SEARCH),
+            'cycle_cost': call.data['cycle_cost'],
         }
 
         # Update coordinator with endpoint and payload

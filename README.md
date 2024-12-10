@@ -16,13 +16,16 @@ service: stenite_battery_planner.plan
 data:
   endpoint: http://10.1.1.111:5050/plan
   nordpool_area: "SE3"
-  mean_draw: 0.5
-  battery_capacity: 10.0
+  mean_draw: 2500
+  battery_capacity: 17880
   min_battery_soc: 20.0
   max_battery_soc: 90.0
+  max_battery_discharge: 5000
+  max_battery_charge: 5000
   battery_soc: 75.5
   battery_allow_export: true
   seconds_to_search: 60
+  cycle_cost: 0.3
 ```
 
 ### Parameters
@@ -42,18 +45,21 @@ automation:
 - alias: "Update Battery Plan Hourly"
   trigger:
     - platform: time_pattern
-      hours: "/1"
+      hours: "/5"
   action:
     - service: stenite_battery_planner.plan
       data:
-        endpoint: http://10.1.1.111:5050/plan
+        endpoint: http://10.1.1.111:5050/
         nordpool_area: "{{ states('sensor.nordpool_area') }}"
         mean_draw: "{{ states('sensor.house_power_draw') }}"
         battery_capacity: "{{ states('sensor.battery_total_capacity') }}"
         min_battery_soc: 20.0
         max_battery_soc: 90.0
+        max_battery_discharge: 5000
+        max_battery_charge: 5000
         battery_soc: "{{ states('sensor.battery_state_of_charge') }}"
         battery_allow_export: true
+        cycle_cost: 0.3
 ```
 
 ## Sensor Attributes
