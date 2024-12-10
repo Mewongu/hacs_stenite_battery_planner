@@ -1,0 +1,11 @@
+{
+    "domain": "stenite_battery_planner",
+    "name": "Stenite Battery Planner",
+    "codeowners": ["@Mewongu"],
+    "config_flow": true,
+    "documentation": "https://github.com/Mewongu/hacs_stenite_battery_planner",
+    "iot_class": "cloud_polling",
+    "issue_tracker": "https://github.com/Mewongu/hacs_stenite_battery_planner/issues",
+    "requirements": ["aiohttp"],
+    "version": "1.0.0"
+}

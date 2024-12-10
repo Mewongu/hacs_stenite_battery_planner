@@ -1,0 +1,80 @@
+plan:
+  fields:
+    nordpool_area:
+      required: false
+      example: "SE3"
+      default: "SE3"
+      selector:
+        text:
+          type: text
+    mean_draw:
+      required: false
+      default: 2.0
+      selector:
+        text:
+          type: text
+    battery_capacity:
+      required: false
+      default: 10.0
+      selector:
+        text:
+          type: text
+    battery_min_soc:
+      required: false
+      default: 20
+      selector:
+        text:
+          type: text
+    battery_max_soc:
+      required: false
+      default: 80
+      selector:
+        text:
+          type: text
+    battery_min_discharge:
+      required: false
+      default: 0.0
+      selector:
+        text:
+          type: text
+    battery_max_discharge:
+      required: false
+      default: 1.0
+      selector:
+        text:
+          type: text
+    battery_min_charge:
+      required: false
+      default: 0.0
+      selector:
+        text:
+          type: text
+    battery_max_charge:
+      required: false
+      default: 1.0
+      selector:
+        text:
+          type: text
+    battery_soc:
+      required: false
+      default: 50
+      selector:
+        text:
+          type: text
+    battery_cycle_cost:
+      required: false
+      default: 0.3
+      selector:
+        text:
+          type: text
+    battery_allow_export:
+      required: false
+      default: true
+      selector:
+        boolean: {}
+    network_charge_kWh:
+      required: false
+      default: 0.3
+      selector:
+        text:
+          type: text

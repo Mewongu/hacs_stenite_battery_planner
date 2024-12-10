@@ -1,0 +1,44 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Stenite Battery Planner",
+                "description": "Configure your battery planner settings",
+                "data": {
+                    "name": "Name",
+                    "nordpool_area": "Nordpool Area",
+                    "mean_draw": "Mean Power Draw (kW)",
+                    "battery_capacity": "Battery Capacity (kWh)",
+                    "battery_min_soc": "Minimum Battery SOC (%)",
+                    "battery_max_soc": "Maximum Battery SOC (%)",
+                    "battery_min_discharge": "Minimum Discharge Power (kW)",
+                    "battery_max_discharge": "Maximum Discharge Power (kW)",
+                    "battery_min_charge": "Minimum Charge Power (kW)",
+                    "battery_max_charge": "Maximum Charge Power (kW)",
+                    "battery_soc": "Current Battery SOC (%)",
+                    "battery_cycle_cost": "Battery Cycle Cost",
+                    "battery_allow_export": "Allow Battery Export",
+                    "network_charge_kWh": "Network Charge (per kWh)"
+                }
+            }
+        },
+        "error": {
+            "min_soc_exceeds_max": "Minimum SOC cannot be greater than maximum SOC",
+            "min_discharge_exceeds_max": "Minimum discharge power cannot be greater than maximum discharge power",
+            "min_charge_exceeds_max": "Minimum charge power cannot be greater than maximum charge power",
+            "unknown": "Unexpected error occurred"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Stenite Battery Planner Options",
+                "description": "Modify your battery planner settings",
+                "data": {
+                    "nordpool_area": "Nordpool Area",
+                    "mean_draw": "Mean Power Draw (kW)"
+                }
+            }
+        }
+    }
+}
