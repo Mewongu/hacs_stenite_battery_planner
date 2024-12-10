@@ -51,7 +51,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         
         try:
             session = async_get_clientsession(hass)
-            async with session.post(f"{endpoint.rstrip('/')}/plan", json=payload) as response:
+            async with session.post(endpoint, json=payload) as response:
                 if response.status == 200:
                     result = await response.json()
                     _LOGGER.info(f"Battery planning successful: {result}")
