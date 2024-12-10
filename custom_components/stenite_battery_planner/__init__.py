@@ -7,16 +7,14 @@ from typing import Any, Dict, Optional
 import voluptuous as vol
 import aiohttp
 
-from homeassistant.core import HomeAssistant, SupportsResponse
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import CONF_NAME
 
 DOMAIN = "stenite_battery_planner"
@@ -56,6 +54,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Create the data coordinator
     coordinator = BatteryPlannerCoordinator(hass, name)
 
+    # Store coordinator in hass.data for sensor platform to access
+    hass.data[DOMAIN] = coordinator
+
     # Register the service to trigger updates
     async def plan_battery(call):
         """Handle the battery planning service call."""
@@ -83,30 +84,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         DOMAIN,
         'plan',
         plan_battery,
-        schema=CALL_SERVICE_SCHEMA,
-        supports_response=SupportsResponse.ONLY,
+        schema=CALL_SERVICE_SCHEMA
     )
 
-    # Set up sensor platform
-    async def async_setup_sensor_platform(
-            hass: HomeAssistant,
-            config: ConfigType,
-            async_add_entities: AddEntitiesCallback,
-            discovery_info: DiscoveryInfoType | None = None
-    ):
-        """Set up the sensor platform."""
-        async_add_entities([
-            BatteryPlannerSensor(coordinator, name)
-        ])
-
-    # Register the sensor platform
-    hass.helpers.discovery.async_load_platform(
-        'sensor',
-        DOMAIN,
-        {},
-        config
-    )
-
+    # Add sensor platform
     hass.async_create_task(
         hass.helpers.discovery.async_load_platform(
             'sensor',
@@ -158,24 +139,3 @@ class BatteryPlannerCoordinator(DataUpdateCoordinator):
         except Exception as e:
             _LOGGER.error(f"Error in battery planning: {e}")
             return self._last_plan
-
-
-class BatteryPlannerSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a Battery Planner Sensor."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator, name: str):
-        """Initialize the sensor."""
-        super().__init__(coordinator)
-        self._attr_name = f"{name} Plan"
-        self._attr_unique_id = f"{DOMAIN}_sensor"
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        # You might want to customize this based on your specific plan structure
-        return self.coordinator.data.get('recommendation', 'Unknown')
-
-    @property
-    def extra_state_attributes(self):
-        """Return additional sensor attributes."""
-        return self.coordinator.data

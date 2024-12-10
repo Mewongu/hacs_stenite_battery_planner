@@ -39,21 +39,21 @@ data:
 ### Example Automation
 ```yaml
 automation:
-  - alias: "Update Battery Plan Hourly"
-    trigger:
-      - platform: time_pattern
-        hours: "/1"
-    action:
-      - service: stenite_battery_planner.plan
-        data:
-          endpoint: http://10.1.1.111:5050/plan
-          nordpool_area: "{{ states('sensor.nordpool_area') }}"
-          mean_draw: "{{ states('sensor.house_power_draw') }}"
-          battery_capacity: "{{ states('sensor.battery_total_capacity') }}"
-          min_battery_soc: 20.0
-          max_battery_soc: 90.0
-          battery_soc: "{{ states('sensor.battery_state_of_charge') }}"
-          battery_allow_export: true
+- alias: "Update Battery Plan Hourly"
+  trigger:
+    - platform: time_pattern
+      hours: "/1"
+  action:
+    - service: stenite_battery_planner.plan
+      data:
+        endpoint: http://10.1.1.111:5050/plan
+        nordpool_area: "{{ states('sensor.nordpool_area') }}"
+        mean_draw: "{{ states('sensor.house_power_draw') }}"
+        battery_capacity: "{{ states('sensor.battery_total_capacity') }}"
+        min_battery_soc: 20.0
+        max_battery_soc: 90.0
+        battery_soc: "{{ states('sensor.battery_state_of_charge') }}"
+        battery_allow_export: true
 ```
 
 ## Sensor Attributes
