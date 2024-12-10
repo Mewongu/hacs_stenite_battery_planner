@@ -1,0 +1,9 @@
+{
+    "domain": "stenite_battery_planner",
+    "name": "Stenite Battery Planner",
+    "codeowners": ["@Mewongu"],
+    "config_flow": false,
+    "documentation": "https://github.com/Mewongu/hacs_stenite_battery_planner",
+    "requirements": ["aiohttp"],
+    "version": "1.0.0"
+}
