@@ -120,10 +120,15 @@ class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
         current_entry = None
 
         for entry in schedule:
-            entry_time = datetime.fromisoformat(entry['time'])
-            if entry_time >= now:
-                current_entry = entry
-                break
+            try:
+                # Parse the GMT datetime string
+                entry_time = datetime.strptime(entry['time'], '%a, %d %b %Y %H:%M:%S GMT')
+                if entry_time >= now:
+                    current_entry = entry
+                    break
+            except ValueError as e:
+                _LOGGER.error("Error parsing datetime: %s for entry: %s", e, entry)
+                continue
 
         if current_entry:
             return f"{current_entry['watts']}W at {current_entry['time']} (Price: {current_entry['price']})"
