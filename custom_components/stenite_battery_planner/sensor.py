@@ -1,4 +1,3 @@
-# custom_components/stenite_battery_planner/sensor.py
 from __future__ import annotations
 
 import logging
@@ -42,6 +41,12 @@ async def async_setup_platform(
         BatteryPlannerStatusSensor(coordinator),
         BatteryPlannerSearchTimeSensor(coordinator),
         BatteryPlannerScheduleSensor(coordinator),
+        BatteryPlannerScheduleInfoSensor(coordinator),
+        BatteryPlannerEnergyCostSensor(coordinator),
+        BatteryPlannerNetworkCostSensor(coordinator),
+        BatteryPlannerCyclingCostSensor(coordinator),
+        BatteryPlannerTotalCostSensor(coordinator),
+        BatteryPlannerBaselineCostSensor(coordinator),
     ]
 
     async_add_entities(entities)
@@ -128,3 +133,97 @@ class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the full schedule."""
         return {'schedule': self.coordinator.data.get('schedule', [])}
+
+
+class BatteryPlannerScheduleInfoSensor(CoordinatorEntity, SensorEntity):
+    """Additional schedule information."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_schedule_info"
+        self._attr_name = "Battery Planner Schedule Info"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the schedule info."""
+        return self.coordinator.data.get('schedule_info')
+
+
+class BatteryPlannerEnergyCostSensor(CoordinatorEntity, SensorEntity):
+    """Energy cost component of the optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_energy_cost"
+        self._attr_name = "Battery Planner Energy Cost"
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the energy cost."""
+        return self.coordinator.data.get('energy_cost')
+
+
+class BatteryPlannerNetworkCostSensor(CoordinatorEntity, SensorEntity):
+    """Network cost component of the optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_network_cost"
+        self._attr_name = "Battery Planner Network Cost"
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the network cost."""
+        return self.coordinator.data.get('network_cost')
+
+
+class BatteryPlannerCyclingCostSensor(CoordinatorEntity, SensorEntity):
+    """Battery cycling cost component of the optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_cycling_cost"
+        self._attr_name = "Battery Planner Cycling Cost"
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the cycling cost."""
+        return self.coordinator.data.get('cycling_cost')
+
+
+class BatteryPlannerTotalCostSensor(CoordinatorEntity, SensorEntity):
+    """Total cost of the optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_total_cost"
+        self._attr_name = "Battery Planner Total Cost"
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the total cost."""
+        return self.coordinator.data.get('total_cost')
+
+
+class BatteryPlannerBaselineCostSensor(CoordinatorEntity, SensorEntity):
+    """Baseline cost without optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_baseline_cost"
+        self._attr_name = "Battery Planner Baseline Cost"
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the baseline cost."""
+        return self.coordinator.data.get('baseline_cost')
