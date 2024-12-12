@@ -39,6 +39,7 @@ async def async_setup_platform(
     entities = [
         BatteryPlannerPowerSensor(coordinator),
         BatteryPlannerStatusSensor(coordinator),
+        BatteryPlannerActionSensor(coordinator),
         BatteryPlannerSearchTimeSensor(coordinator),
         BatteryPlannerScheduleSensor(coordinator),
         BatteryPlannerScheduleInfoSensor(coordinator),
@@ -81,6 +82,20 @@ class BatteryPlannerStatusSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str | None:
         """Return the status."""
         return self.coordinator.data.get('status')
+
+
+class BatteryPlannerActionSensor(CoordinatorEntity, SensorEntity):
+    """Status of the optimization."""
+
+    def __init__(self, coordinator: BatteryPlannerCoordinator):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_action"
+        self._attr_name = "Battery Planner Action"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the status."""
+        return self.coordinator.data.get('action_type')
 
 
 class BatteryPlannerSearchTimeSensor(CoordinatorEntity, SensorEntity):
