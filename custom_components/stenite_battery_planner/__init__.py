@@ -140,7 +140,7 @@ class BatteryPlannerCoordinator(DataUpdateCoordinator):
                     return self._last_plan
                 else:
                     error_text = await response.text()
-                    _LOGGER.error(f"Battery planning failed with status {response.status}: {error_text}")
+                    _LOGGER.error(f"Battery planning failed with status {response.status}: {error_text}\n when connecting to {self.endpoint}")
                     return self._last_plan
         except Exception as e:
             _LOGGER.error(f"Error in battery planning: {e}")
