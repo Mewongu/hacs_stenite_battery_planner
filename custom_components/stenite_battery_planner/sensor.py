@@ -125,12 +125,12 @@ class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
 
         if current_entry:
             msg = {
-                'na': 'No action',
+                'idle': 'No action',
                 'charge': f'Charge at {current_entry['watts']/1000:.3f}kW',
                 'discharge': f'Disharge at {current_entry['watts']/1000:.3f}kW',
                 'self_consumption': f'Self consumption up to around {current_entry['watts']/1000:.3f}kW',
             }
-            return msg[current_entry.get('action_type', 'na')]
+            return msg[current_entry.get('action_type', 'idle')]
         return None
 
     @property
