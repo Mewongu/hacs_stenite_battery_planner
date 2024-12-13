@@ -92,6 +92,7 @@ class BatteryPlannerSearchTimeSensor(CoordinatorEntity, SensorEntity):
         """Return the search time."""
         return self.coordinator.data.get('search_time')
 
+
 class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
     """Schedule of planned battery operations."""
 
@@ -107,7 +108,30 @@ class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
         if not schedule:
             return None
 
-        return str(schedule[0])
+        # Find the current/next applicable schedule entry
+        now = datetime.now()
+        current_entry = None
+
+        for entry in schedule:
+            try:
+                # Parse the GMT datetime string
+                entry_time = datetime.strptime(entry['time'], '%a, %d %b %Y %H:%M:%S GMT')
+                if entry_time >= now:
+                    current_entry = entry
+                    break
+            except ValueError as e:
+                _LOGGER.error("Error parsing datetime: %s for entry: %s", e, entry)
+                continue
+
+        if current_entry:
+            msg = {
+                'na': 'No action',
+                'charge': f'Charge at {current_entry['watts']/1000:.3f}kW',
+                'discharge': f'Disharge at {current_entry['watts']/1000:.3f}kW',
+                'self_consumption': f'Self consumption up to around {current_entry['watts']/1000:.3f}kW',
+            }
+            return msg[current_entry.get('action_type', 'na')]
+        return None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
