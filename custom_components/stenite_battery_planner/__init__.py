@@ -41,6 +41,8 @@ CALL_SERVICE_SCHEMA = vol.Schema({
     vol.Required('battery_max_soc'): vol.Coerce(float),  # percentage
     vol.Required('battery_max_discharge'): vol.Coerce(float),  # kW
     vol.Required('battery_min_discharge'): vol.Coerce(float),  # kW
+    vol.Required('battery_max_charge'): vol.Coerce(float),  # kW
+    vol.Required('battery_min_charge'): vol.Coerce(float),  # kW
     vol.Required('battery_soc'): vol.Coerce(float),  # percentage
     vol.Required('battery_cycle_cost'): vol.Coerce(float),  # Currency per cycle
     vol.Required('network_charge_kWh'): vol.Coerce(float),  # Currency per kWh
@@ -70,6 +72,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             'battery_max_soc': call.data['battery_max_soc'],
             'battery_max_discharge': call.data['battery_max_discharge'],
             'battery_min_discharge': call.data['battery_min_discharge'],
+            'battery_max_charge': call.data['battery_max_charge'],
+            'battery_min_charge': call.data['battery_min_charge'],
             'battery_soc': call.data['battery_soc'],
             'battery_allow_export': call.data.get('battery_allow_export', DEFAULT_BATTERY_ALLOW_EXPORT),
             'battery_cycle_cost': call.data['battery_cycle_cost'],
