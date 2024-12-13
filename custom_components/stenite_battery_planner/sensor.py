@@ -1,7 +1,8 @@
+# custom_components/stenite_battery_planner/sensor.py
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict
+from typing import Any
 from datetime import datetime
 
 from homeassistant.core import HomeAssistant
@@ -22,7 +23,6 @@ from . import DOMAIN, BatteryPlannerCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup_platform(
         hass: HomeAssistant,
         config: ConfigType,
@@ -38,20 +38,14 @@ async def async_setup_platform(
 
     entities = [
         BatteryPlannerPowerSensor(coordinator),
-        BatteryPlannerStatusSensor(coordinator),
         BatteryPlannerActionSensor(coordinator),
         BatteryPlannerSearchTimeSensor(coordinator),
         BatteryPlannerScheduleSensor(coordinator),
-        BatteryPlannerScheduleInfoSensor(coordinator),
-        BatteryPlannerEnergyCostSensor(coordinator),
-        BatteryPlannerNetworkCostSensor(coordinator),
-        BatteryPlannerCyclingCostSensor(coordinator),
         BatteryPlannerTotalCostSensor(coordinator),
         BatteryPlannerBaselineCostSensor(coordinator),
     ]
 
     async_add_entities(entities)
-
 
 class BatteryPlannerPowerSensor(CoordinatorEntity, SensorEntity):
     """Current power recommendation from planner."""
@@ -69,23 +63,8 @@ class BatteryPlannerPowerSensor(CoordinatorEntity, SensorEntity):
         """Return the power value."""
         return self.coordinator.data.get('watts')
 
-
-class BatteryPlannerStatusSensor(CoordinatorEntity, SensorEntity):
-    """Status of the optimization."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_status"
-        self._attr_name = "Battery Planner Status"
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the status."""
-        return self.coordinator.data.get('status')
-
-
 class BatteryPlannerActionSensor(CoordinatorEntity, SensorEntity):
-    """Status of the optimization."""
+    """Current action type from planner."""
 
     def __init__(self, coordinator: BatteryPlannerCoordinator):
         super().__init__(coordinator)
@@ -94,9 +73,8 @@ class BatteryPlannerActionSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | None:
-        """Return the status."""
+        """Return the action type."""
         return self.coordinator.data.get('action_type')
-
 
 class BatteryPlannerSearchTimeSensor(CoordinatorEntity, SensorEntity):
     """Time spent searching for optimization."""
@@ -114,7 +92,6 @@ class BatteryPlannerSearchTimeSensor(CoordinatorEntity, SensorEntity):
         """Return the search time."""
         return self.coordinator.data.get('search_time')
 
-
 class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
     """Schedule of planned battery operations."""
 
@@ -130,92 +107,12 @@ class BatteryPlannerScheduleSensor(CoordinatorEntity, SensorEntity):
         if not schedule:
             return None
 
-        # Find the current/next applicable schedule entry
-        now = datetime.now()
-        current_entry = None
-
-        for entry in schedule:
-            try:
-                # Parse the GMT datetime string
-                entry_time = datetime.strptime(entry['time'], '%a, %d %b %Y %H:%M:%S GMT')
-                if entry_time >= now:
-                    current_entry = entry
-                    break
-            except ValueError as e:
-                _LOGGER.error("Error parsing datetime: %s for entry: %s", e, entry)
-                continue
-
-        if current_entry:
-            return f"{current_entry['watts']}W at {current_entry['time']} (Price: {current_entry['price']})"
-        return None
+        return str(schedule[0])
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the full schedule."""
         return {'schedule': self.coordinator.data.get('schedule', [])}
-
-
-class BatteryPlannerScheduleInfoSensor(CoordinatorEntity, SensorEntity):
-    """Additional schedule information."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_schedule_info"
-        self._attr_name = "Battery Planner Schedule Info"
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the schedule info."""
-        return self.coordinator.data.get('schedule_info')
-
-
-class BatteryPlannerEnergyCostSensor(CoordinatorEntity, SensorEntity):
-    """Energy cost component of the optimization."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_energy_cost"
-        self._attr_name = "Battery Planner Energy Cost"
-        self._attr_device_class = SensorDeviceClass.MONETARY
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the energy cost."""
-        return self.coordinator.data.get('energy_cost')
-
-
-class BatteryPlannerNetworkCostSensor(CoordinatorEntity, SensorEntity):
-    """Network cost component of the optimization."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_network_cost"
-        self._attr_name = "Battery Planner Network Cost"
-        self._attr_device_class = SensorDeviceClass.MONETARY
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the network cost."""
-        return self.coordinator.data.get('network_cost')
-
-
-class BatteryPlannerCyclingCostSensor(CoordinatorEntity, SensorEntity):
-    """Battery cycling cost component of the optimization."""
-
-    def __init__(self, coordinator: BatteryPlannerCoordinator):
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_cycling_cost"
-        self._attr_name = "Battery Planner Cycling Cost"
-        self._attr_device_class = SensorDeviceClass.MONETARY
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the cycling cost."""
-        return self.coordinator.data.get('cycling_cost')
-
 
 class BatteryPlannerTotalCostSensor(CoordinatorEntity, SensorEntity):
     """Total cost of the optimization."""
@@ -231,7 +128,6 @@ class BatteryPlannerTotalCostSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> float | None:
         """Return the total cost."""
         return self.coordinator.data.get('total_cost')
-
 
 class BatteryPlannerBaselineCostSensor(CoordinatorEntity, SensorEntity):
     """Baseline cost without optimization."""

@@ -22,7 +22,6 @@ _LOGGER = logging.getLogger(__name__)
 
 # Default values
 DEFAULT_NAME = "Battery Planner"
-DEFAULT_SECONDS_TO_SEARCH = 15
 DEFAULT_BATTERY_ALLOW_EXPORT = False
 
 # Configuration schema
@@ -32,22 +31,21 @@ CONFIG_SCHEMA = vol.Schema({
     })
 }, extra=vol.ALLOW_EXTRA)
 
-# Service call schema
+# Updated service call schema to match new API
 CALL_SERVICE_SCHEMA = vol.Schema({
     vol.Required('endpoint'): cv.url,
     vol.Required('nordpool_area'): cv.string,
-    vol.Required('mean_draw'): vol.Coerce(float),
-    vol.Required('battery_capacity'): vol.Coerce(float),
-    vol.Required('min_battery_soc'): vol.Coerce(float),
-    vol.Required('max_battery_soc'): vol.Coerce(float),
-    vol.Required('max_battery_discharge'): vol.Coerce(float),
-    vol.Required('max_battery_charge'): vol.Coerce(float),
-    vol.Required('battery_soc'): vol.Coerce(float),
-    vol.Required('cycle_cost'): vol.Coerce(float),
+    vol.Required('mean_draw'): vol.Coerce(float),  # kW
+    vol.Required('battery_capacity'): vol.Coerce(float),  # kWh
+    vol.Required('battery_min_soc'): vol.Coerce(float),  # percentage
+    vol.Required('battery_max_soc'): vol.Coerce(float),  # percentage
+    vol.Required('battery_max_discharge'): vol.Coerce(float),  # kW
+    vol.Required('battery_min_discharge'): vol.Coerce(float),  # kW
+    vol.Required('battery_soc'): vol.Coerce(float),  # percentage
+    vol.Required('battery_cycle_cost'): vol.Coerce(float),  # Currency per cycle
+    vol.Required('network_charge_kWh'): vol.Coerce(float),  # Currency per kWh
     vol.Optional('battery_allow_export', default=DEFAULT_BATTERY_ALLOW_EXPORT): cv.boolean,
-    vol.Optional('seconds_to_search', default=DEFAULT_SECONDS_TO_SEARCH): cv.positive_int,
 })
-
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Stenite Battery Planner Integration."""
@@ -68,14 +66,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             'nordpool_area': call.data['nordpool_area'],
             'mean_draw': call.data['mean_draw'],
             'battery_capacity': call.data['battery_capacity'],
-            'min_battery_soc': call.data['min_battery_soc'],
-            'max_battery_soc': call.data['max_battery_soc'],
-            'max_battery_discharge': call.data['max_battery_discharge'],
-            'max_battery_charge': call.data['max_battery_charge'],
+            'battery_min_soc': call.data['battery_min_soc'],
+            'battery_max_soc': call.data['battery_max_soc'],
+            'battery_max_discharge': call.data['battery_max_discharge'],
+            'battery_min_discharge': call.data['battery_min_discharge'],
             'battery_soc': call.data['battery_soc'],
             'battery_allow_export': call.data.get('battery_allow_export', DEFAULT_BATTERY_ALLOW_EXPORT),
-            'seconds_to_search': call.data.get('seconds_to_search', DEFAULT_SECONDS_TO_SEARCH),
-            'cycle_cost': call.data['cycle_cost'],
+            'battery_cycle_cost': call.data['battery_cycle_cost'],
+            'network_charge_kWh': call.data['network_charge_kWh'],
         }
 
         # Update coordinator with endpoint and payload
@@ -104,7 +102,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     )
 
     return True
-
 
 class BatteryPlannerCoordinator(DataUpdateCoordinator):
     """Coordinator for fetching battery plan data."""
