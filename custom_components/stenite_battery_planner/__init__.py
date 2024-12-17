@@ -3,17 +3,29 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-import aiohttp
 import voluptuous as vol
-from homeassistant.const import CONF_NAME
+
+from homeassistant.const import (
+    CONF_NAME,
+    Platform,
+)
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
+from homeassistant.config_entries import ConfigEntry
 
 DOMAIN = "stenite_battery_planner"
 _LOGGER = logging.getLogger(__name__)
+
+PLATFORMS: list[Platform] = [
+    Platform.NUMBER,
+    Platform.SELECT,
+]
 
 # Default values
 DEFAULT_NAME = "Battery Planner"
@@ -21,11 +33,16 @@ DEFAULT_BATTERY_ALLOW_EXPORT = False
 API_ENDPOINT = "https://batteryplanner.stenite.com/api/v2/plan"
 
 # Configuration schema
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-    })
-}, extra=vol.ALLOW_EXTRA)
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.Schema(
+            {
+                vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+            }
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 # Updated service call schema to match v2 API spec
 CALL_SERVICE_SCHEMA = vol.Schema({
@@ -65,7 +82,6 @@ CALL_SERVICE_SCHEMA = vol.Schema({
     vol.Required('network_charge_kWh'): vol.Coerce(float),
 })
 
-# Input parameter definitions
 PLANNER_INPUT_PARAMS = [
     {"api_id": 'nordpool_area', "id": 'nordpool_area', "name": 'Nordpool Area', "entity_type": 'option',
      "options": ["SE1", "SE2", "SE3", "SE4"]},
@@ -98,23 +114,30 @@ PLANNER_INPUT_PARAMS = [
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Stenite Battery Planner Integration."""
-    conf = config.get(DOMAIN, {})
+    if DOMAIN not in config:
+        return True
+
+    conf = config[DOMAIN]
     name = conf.get(CONF_NAME, DEFAULT_NAME)
 
+    # Create the coordinator
     coordinator = BatteryPlannerCoordinator(hass, name)
-    hass.data[DOMAIN] = coordinator
 
+    # Store coordinator in hass.data
+    hass.data[DOMAIN] = {
+        "coordinator": coordinator,
+        "name": name,
+    }
+
+    # Register service
     async def plan_battery(call: ServiceCall) -> ServiceResponse:
         """Handle the battery planning service call."""
         try:
-            # Validate that all required parameters are present
             payload = {param["api_id"]: await coordinator.get_param_value(param["api_id"])
                        for param in PLANNER_INPUT_PARAMS if param["api_id"]}
 
-            # Override with any parameters provided in the service call
             payload.update({k: v for k, v in call.data.items() if k in payload})
 
-            # Additional validation
             if payload['battery_min_soc'] > payload['battery_max_soc']:
                 raise ValueError("Minimum SOC cannot be greater than maximum SOC")
             if payload['battery_min_discharge'] > payload['battery_max_discharge']:
@@ -136,24 +159,37 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     hass.services.async_register(
         DOMAIN,
-        'plan',
+        "plan",
         plan_battery,
         schema=CALL_SERVICE_SCHEMA,
         supports_response=SupportsResponse.ONLY,
     )
 
     # Set up platforms
-    for platform in ['number', 'select']:
-        hass.async_create_task(
-            hass.helpers.discovery.async_load_platform(
-                platform,
-                DOMAIN,
-                {},
-                config
-            )
-        )
+    await hass.async_create_task(
+        async_load_platforms(hass, config)
+    )
 
     return True
+
+
+async def async_load_platforms(hass: HomeAssistant, config: ConfigType) -> None:
+    """Load platforms with modern setup."""
+    # Create a mock config entry since we're not using config flow
+    mock_entry = ConfigEntry(
+        entry_id="1",
+        domain=DOMAIN,
+        title="Battery Planner",
+        data={},
+        options={},
+        version=1,
+    )
+
+    # Set up each platform
+    for platform in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(mock_entry, platform)
+        )
 
 
 class BatteryPlannerCoordinator(DataUpdateCoordinator):
@@ -164,7 +200,8 @@ class BatteryPlannerCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             _LOGGER,
-            name=f"{name} Coordinator"
+            name=f"{name} Coordinator",
+            update_interval=None  # Only update via service calls
         )
         self.endpoint: Optional[str] = None
         self.payload: Dict[str, Any] = {}
@@ -190,11 +227,8 @@ class BatteryPlannerCoordinator(DataUpdateCoordinator):
                 self._last_plan = await response.json()
                 return self._last_plan
 
-        except aiohttp.ClientError as e:
-            _LOGGER.error(f"Error in battery planning API request: {str(e)}")
-            return {}
         except Exception as e:
-            _LOGGER.error(f"Unexpected error in battery planning: {str(e)}")
+            _LOGGER.error(f"Error in battery planning: {str(e)}")
             return {}
 
     async def _async_update_data(self) -> Dict[str, Any]:
