@@ -11,7 +11,7 @@ This custom integration for Home Assistant connects to the Stenite Battery Plann
 - Provides both immediate power recommendations and 24-hour schedules
 - Creates input entities for all configuration parameters
 
-## Installation
+## Installat    ion
 
 ### HACS (Recommended)
 

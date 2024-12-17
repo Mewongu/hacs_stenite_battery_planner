@@ -3,16 +3,14 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-import voluptuous as vol
 import aiohttp
-
+import voluptuous as vol
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.const import CONF_NAME
 
 DOMAIN = "stenite_battery_planner"
 _LOGGER = logging.getLogger(__name__)
