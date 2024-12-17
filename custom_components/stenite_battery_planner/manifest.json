@@ -1,5 +1,6 @@
 {
     "domain": "stenite_battery_planner",
+    "platforms": ["number", "select"],
     "name": "Stenite Battery Planner",
     "codeowners": ["@Mewongu"],
     "config_flow": false,

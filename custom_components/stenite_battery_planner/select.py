@@ -1,105 +1,80 @@
 from __future__ import annotations
-
 import logging
-from typing import Dict, Final
+from typing import Dict
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 
 from . import DOMAIN, PLANNER_INPUT_PARAMS, BatteryPlannerCoordinator
 
 _LOGGER = logging.getLogger(__name__)
-
-# Constants for select options
-NORDPOOL_AREAS: Final = ["SE1", "SE2", "SE3", "SE4"]
-EXPORT_OPTIONS: Final = [True, False]
-
 
 async def async_setup_platform(
         hass: HomeAssistant,
         config: ConfigType,
         async_add_entities: AddEntitiesCallback,
         discovery_info: DiscoveryInfoType | None = None
-) -> None:
-    """Set up the Battery Planner select platform."""
+):
+    """Set up the Battery Planner selector platform."""
     coordinator = hass.data.get(DOMAIN)
 
     if coordinator is None:
         _LOGGER.error("No Battery Planner coordinator found")
         return
+        
+    entities = []
 
-    entities = [
-        BatteryPlannerSelectEntity(coordinator, params)
-        for params in PLANNER_INPUT_PARAMS
-        if params["entity_type"] == "option"
-    ]
-
+    for d in PLANNER_INPUT_PARAMS:
+        if d["entity_type"] == "option":
+            entities.append(BatteryPlannerSelectEntity(coordinator, d))
+        
     async_add_entities(entities)
 
-
 class BatteryPlannerSelectEntity(CoordinatorEntity, SelectEntity):
-    """Represents a selection input parameter for the battery planner."""
-
     def __init__(self, coordinator: BatteryPlannerCoordinator, attributes: Dict[str, any]):
         """Initialize the select entity."""
         super().__init__(coordinator)
-
-        # Basic attributes
-        self._attr_unique_id = f"{DOMAIN}_{attributes['id']}"
+       
+        self._device_id = f"{DOMAIN}"
+        
+        # Attributes ...
+        self._attr_unique_id = f"{self._device_id}_{attributes["id"]}"
         self._attr_name = attributes["name"]
-        self._attr_entity_category = EntityCategory.CONFIG
-
-        # Options setup
-        self._attr_options = [str(opt) for opt in attributes["options"]]  # Convert all options to strings
-
+        self._attr_options = attributes["options"]
+        
         # Coordinator param link
         self._param_id = attributes["api_id"]
 
-        # Device info
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, "battery_planner")},
-            name="Battery Planner",
-            manufacturer="Stenite",
-            model="Battery Planner v2",
-            sw_version="2.0"
-        )
+        # Current selected option
+        self._current_option = self._attr_options[0]
 
     @property
-    def current_option(self) -> str | None:
+    def current_option(self):
         """Return the current selected option."""
-        try:
-            value = self.coordinator._params[self._param_id]
-            return str(value)  # Convert to string for consistency
-        except (KeyError, AttributeError):
-            return None
+        return self._current_option
 
-    async def async_select_option(self, option: str) -> None:
+    async def async_select_option(self, option: str):
         """Change the selected option."""
-        try:
-            # Convert the option to the appropriate type based on the parameter
-            if self._param_id == 'battery_allow_export':
-                value = option.lower() == 'true'  # Convert string to boolean
-            else:
-                value = option  # Keep as string for other parameters
+        if option not in self._attr_options:
+            raise ValueError(f"Invalid option: {option}")
+        
+        # Update the option in your device/service
+        self._current_option = option
 
-            # Update the value in coordinator
-            await self.coordinator.set_param(self._param_id, value)
-            self.async_write_ha_state()
-
-        except Exception as e:
-            _LOGGER.error(f"Error setting option for {self.name}: {str(e)}")
-            raise
+        # Implement actual value setting logic with your device/service
+        await self.coordinator.set_param(self._param_id, option)
+        self.async_write_ha_state()
 
     @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return True  # Always available as it's a configuration entity
-
-    @property
-    def should_poll(self) -> bool:
-        """Return if entity should be polled."""
-        return False  # No polling needed for configuration entities
+    def device_info(self):
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(self._device_id)},
+            name="Your Device Name"
+        )
