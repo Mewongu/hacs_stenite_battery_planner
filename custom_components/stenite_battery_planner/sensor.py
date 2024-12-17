@@ -33,6 +33,7 @@ async def async_setup_entry(
         BatteryPlannerActionSensor(coordinator, entry),
         BatteryPlannerPowerSensor(coordinator, entry),
         BatteryPlannerSavingsSensor(coordinator, entry),
+        BatteryPlannerScheduleSensor(coordinator, entry),
     ]
 
     async_add_entities(entities)
@@ -142,4 +143,38 @@ class BatteryPlannerSavingsSensor(BatteryPlannerBaseSensor):
         return {
             "baseline_cost": float(self.coordinator.data.get("baseline_cost", 0.0)),
             "total_cost": float(self.coordinator.data.get("total_cost", 0.0)),
+        }
+
+
+class BatteryPlannerScheduleSensor(BatteryPlannerBaseSensor):
+    """Sensor for the battery schedule status."""
+
+    _attr_should_poll = False  # Prevent state recording
+
+    def __init__(
+            self,
+            coordinator: BatteryPlannerCoordinator,
+            entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_schedule"
+        self._attr_name = "Battery Schedule Status"
+
+    @property
+    def native_value(self) -> StateType:
+        """Return a summary of the schedule."""
+        if not self.coordinator.data or "schedule" not in self.coordinator.data:
+            return "No schedule"
+        return f"{len(self.coordinator.data['schedule'])} periods planned"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return minimal attributes."""
+        if not self.coordinator.data or "schedule" not in self.coordinator.data:
+            return {}
+
+        schedule = self.coordinator.data.get("schedule", [])
+        return {
+            "schedule": schedule,
         }

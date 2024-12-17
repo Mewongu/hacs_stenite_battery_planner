@@ -236,6 +236,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             supports_response=SupportsResponse.ONLY,
         )
 
+    async def get_schedule(call: ServiceCall) -> ServiceResponse:
+        """Handle retrieving the current schedule."""
+        coordinator = next(iter(hass.data[DOMAIN].values()))
+        if not coordinator.data or "schedule" not in coordinator.data:
+            return {"schedule": []}
+
+        schedule = coordinator.data.get("schedule", [])
+        formatted_schedule = []
+
+        for period in schedule:
+            formatted_schedule.append({
+                "start_time": period.get("start_time"),
+                "end_time": period.get("end_time"),
+                "action": period.get("action"),
+                "power": period.get("power"),
+                "price": period.get("price"),
+                "savings": period.get("savings")
+            })
+
+        return {"schedule": formatted_schedule}
+
+    # Register the get_schedule service
+    hass.services.async_register(
+        DOMAIN,
+        "get_schedule",
+        get_schedule,
+        supports_response=SupportsResponse.ONLY,
+    )
+
     return True
 
 
