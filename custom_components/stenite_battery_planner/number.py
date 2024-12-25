@@ -3,6 +3,7 @@ import logging
 from typing import Dict
 
 from homeassistant.components.number import NumberEntity
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
@@ -15,25 +16,25 @@ from . import DOMAIN, PLANNER_INPUT_PARAMS, BatteryPlannerCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_platform(
+
+async def async_setup_entry(
         hass: HomeAssistant,
-        config: ConfigType,
+        entry: ConfigEntry,
         async_add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None
-):
+) -> None:
     """Set up the Battery Planner number platform."""
-    coordinator = hass.data.get(DOMAIN)
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
     if coordinator is None:
         _LOGGER.error("No Battery Planner coordinator found")
         return
-        
+
     entities = []
 
     for d in PLANNER_INPUT_PARAMS:
         if d["entity_type"] == "number":
             entities.append(BatteryPlannerInputNumber(coordinator, d))
-        
+
     async_add_entities(entities)
 
 class BatteryPlannerInputNumber(CoordinatorEntity, NumberEntity):
