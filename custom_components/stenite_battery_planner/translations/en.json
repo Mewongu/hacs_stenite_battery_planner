@@ -18,7 +18,8 @@
                     "battery_soc": "Current Battery SOC (%)",
                     "battery_cycle_cost": "Battery Cycle Cost",
                     "battery_allow_export": "Allow Battery Export",
-                    "network_charge_kWh": "Network Charge (per kWh)"
+                    "network_charge_kWh": "Network Charge (per kWh)",
+                    "stored_value_per_kWh": "Stored Value (per kWh)"
                 }
             }
         },

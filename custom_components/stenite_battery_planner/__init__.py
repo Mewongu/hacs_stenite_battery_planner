@@ -76,6 +76,10 @@ CONFIG_SCHEMA = vol.Schema({
             vol.Coerce(float),
             lambda v: validate_positive_float(v, "network_charge_kWh")
         ),
+        vol.Optional("stored_value_per_kWh", default=0.3): vol.All(
+            vol.Coerce(float),
+            lambda v: validate_positive_float(v, "stored_value_per_kWh")
+        ),
     })
 }, extra=vol.ALLOW_EXTRA)
 
@@ -150,6 +154,10 @@ CALL_SERVICE_SCHEMA = vol.Schema({
         lambda v: validate_positive_float(v, "network_charge_kWh")
     ),
     vol.Optional('battery_allow_export', default=DEFAULT_BATTERY_ALLOW_EXPORT): cv.boolean,
+    vol.Optional('stored_value_per_kWh'): vol.All(
+        vol.Coerce(float),
+        lambda v: validate_positive_float(v, "stored_value_per_kWh")
+    ),
 })
 
 PLANNER_API_PARAM_ID = [
@@ -166,6 +174,7 @@ PLANNER_API_PARAM_ID = [
     'battery_allow_export',
     'battery_cycle_cost',
     'network_charge_kWh',
+    'stored_value_per_kWh',
 ]
 
 PLANNER_INPUT_PARAMS = [
@@ -310,6 +319,7 @@ class BatteryPlannerCoordinator(DataUpdateCoordinator):
             "battery_allow_export": True,
             "battery_cycle_cost": 0.0,
             "network_charge_kWh": 0.0,
+            "stored_value_per_kWh": 0.0,
         }
 
     async def _async_update_data(self) -> Dict[str, Any]:

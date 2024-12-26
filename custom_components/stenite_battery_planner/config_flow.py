@@ -107,6 +107,9 @@ class SteniteBatteryPlannerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("network_charge_kWh", default=0.3): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=0.01, mode="box")
             ),
+            vol.Required("stored_value_per_kWh", default=0.0): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=0, max=100, step=0.01, mode="box")
+            ),
         }
 
         return self.async_show_form(
@@ -173,6 +176,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             "battery_cycle_cost": self.config_entry.data.get("battery_cycle_cost", 0.3),
             "battery_allow_export": self.config_entry.data.get("battery_allow_export", True),
             "network_charge_kWh": self.config_entry.data.get("network_charge_kWh", 0.3),
+            "stored_value_per_kWh": self.config_entry.data.get("stored_value_per_kWh", 0),
         }
 
         # Define schema using selectors
@@ -212,6 +216,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ),
             vol.Required("battery_allow_export", default=current["battery_allow_export"]): selector.BooleanSelector(),
             vol.Required("network_charge_kWh", default=current["network_charge_kWh"]): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=0, max=100, step=0.001, mode="box")
+            ),vol.Required("stored_value_per_kWh", default=current["stored_value_per_kWh"]): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=0.001, mode="box")
             ),
         }
